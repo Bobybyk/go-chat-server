@@ -5,6 +5,11 @@ import (
 	"net/http"
 )
 
+/**
+ * Met à jour la carte des clients, 
+ * lit les messages JSON des clients et les transmet à la goroutine de diffusion,
+ * et gère les erreurs de connexion
+ */
 func HandleConnections(w http.ResponseWriter, r *http.Request) {
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
