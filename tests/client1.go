@@ -18,7 +18,7 @@ func main() {
 	interrupt := make(chan os.Signal, 1)
 	signal.Notify(interrupt, os.Interrupt)
 
-	serverURL := "ws://localhost:8081/ws" // Mettez l'URL de votre serveur ici
+	serverURL := "ws://localhost:8080/ws"
 
 	c, _, err := websocket.DefaultDialer.Dial(serverURL, nil)
 	if err != nil {
@@ -64,7 +64,7 @@ func main() {
 			fmt.Print("Entrez un message: ")
 			inputReader := bufio.NewReader(os.Stdin)
 			message, _ := inputReader.ReadString('\n')
-			message = message[:len(message)-1] // Supprimer le caractère de nouvelle ligne
+			message = message[:len(message)-1] // Suppression du caractère de nouvelle ligne
 			msg := Message{Content: message}
 			msgBytes, _ := json.Marshal(msg)
 			err = c.WriteMessage(websocket.TextMessage, msgBytes)
