@@ -16,8 +16,8 @@ func main() {
 	http.HandleFunc("/ws", server.HandleConnections)
 	go server.HandleMessages()
 
-	fmt.Println("Server started on :8082")
-	err := http.ListenAndServe(":8080", nil)
+	fmt.Println("Server started on :8080")
+	err := http.ListenAndServe(":8084", nil)
 	if err != nil {
 		log.Fatal("ListenAndServe: ", err)
 	}

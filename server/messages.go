@@ -12,12 +12,13 @@ func HandleMessages() {
 	for {
 		msg := <-broadcast
 		mutex.Lock()
-		for client := range clients {
-			err := client.WriteJSON(msg)
-			if err != nil {
-				log.Printf("Error writing message: %v", err)
-				client.Close()
-				delete(clients, client)
+		for client, username := range clients {
+			// Exclure le client actuel de la diffusion
+			if client != nil && username != msg.Username {
+				err := client.WriteJSON(msg)
+				if err != nil {
+					log.Printf("Error writing message: %v", err)
+				}
 			}
 		}
 		mutex.Unlock()

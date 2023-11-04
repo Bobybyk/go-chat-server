@@ -1,9 +1,9 @@
 package main
 
 import (
-	"bufio"
 	"fmt"
 	"log"
+	"bufio"
 	"os"
 	"os/signal"
 	"encoding/json"
@@ -11,14 +11,15 @@ import (
 )
 
 type Message struct {
-	Content string `json:"content"`
+	Username string `json:"username"`
+	Content  string `json:"content"`
 }
 
 func main() {
 	interrupt := make(chan os.Signal, 1)
 	signal.Notify(interrupt, os.Interrupt)
 
-	serverURL := "ws://localhost:8080/ws"
+	serverURL := "ws://localhost:8084/ws" // Mettez l'URL de votre serveur ici
 
 	c, _, err := websocket.DefaultDialer.Dial(serverURL, nil)
 	if err != nil {
@@ -27,6 +28,24 @@ func main() {
 	defer c.Close()
 
 	done := make(chan struct{})
+
+	// Saisie du nom d'utilisateur
+	var username string
+	fmt.Print("Entrez votre nom d'utilisateur: ")
+	_, err = fmt.Scanln(&username)
+	if err != nil {
+		log.Println("Erreur de lecture de l'entrée standard:", err)
+		return
+	}
+
+	// Envoyer un message d'inscription au serveur
+	registerMessage := Message{Username: username, Content: ""}
+	registerMessageBytes, _ := json.Marshal(registerMessage)
+	err = c.WriteMessage(websocket.TextMessage, registerMessageBytes)
+	if err != nil {
+		log.Println("Erreur d'envoi du message d'inscription:", err)
+		return
+	}
 
 	go func() {
 		defer close(done)
@@ -41,10 +60,16 @@ func main() {
 				log.Println("Erreur de désérialisation du message:", err)
 				return
 			}
-			fmt.Printf("Message reçu: %s\n", msg.Content)
+			if msg.Username != username {
+				fmt.Printf("%s: %s\n", msg.Username, msg.Content)
+			} else {
+				fmt.Printf("Vous: %s\n", msg.Content)
+			}
 		}
 	}()
 
+	scanner := bufio.NewScanner(os.Stdin)
+	fmt.Println("Vous êtes connecté (Ctrl+Z pour quitter):")
 	for {
 		select {
 		case <-done:
@@ -61,11 +86,9 @@ func main() {
 			}
 			return
 		default:
-			fmt.Print("Entrez un message: ")
-			inputReader := bufio.NewReader(os.Stdin)
-			message, _ := inputReader.ReadString('\n')
-			message = message[:len(message)-1] // Suppression du caractère de nouvelle ligne
-			msg := Message{Content: message}
+			scanner.Scan()
+			message := scanner.Text()
+			msg := Message{Username: username, Content: message}
 			msgBytes, _ := json.Marshal(msg)
 			err = c.WriteMessage(websocket.TextMessage, msgBytes)
 			if err != nil {

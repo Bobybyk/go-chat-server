@@ -1,6 +1,7 @@
 package server
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 )
@@ -18,8 +19,19 @@ func HandleConnections(w http.ResponseWriter, r *http.Request) {
 	}
 	defer conn.Close()
 
+	var msg Message
+
+	// Attendez un message d'inscription du client
+	err = conn.ReadJSON(&msg)
+	if err != nil {
+		log.Printf("Error reading registration message: %v", err)
+		return
+	}
+
+	username := msg.Username
+
 	mutex.Lock()
-	clients[conn] = true
+	clients[conn] = username
 	mutex.Unlock()
 
 	for {
@@ -32,6 +44,8 @@ func HandleConnections(w http.ResponseWriter, r *http.Request) {
 			mutex.Unlock()
 			break
 		}
+
+		fmt.Printf("connections.go - %s: %s\n", msg.Username, msg.Content)
 
 		broadcast <- msg
 	}

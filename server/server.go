@@ -15,7 +15,7 @@ var upgrader = websocket.Upgrader{
 }
 
 // Gère les clients connectés
-var clients = make(map[*websocket.Conn]bool)
+var clients = make(map[*websocket.Conn]string)
 // Gère les messages à diffuser
 var broadcast = make(chan Message)
 // Gère l'accès concurrent aux clients
@@ -23,5 +23,11 @@ var mutex sync.Mutex
 
 // Structure du message échangé
 type Message struct {
+	Username string `json:"username"`
 	Content string `json:"content"`
+}
+
+type Client struct {
+	Conn      *websocket.Conn
+	Username  string
 }
