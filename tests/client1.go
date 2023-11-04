@@ -10,10 +10,19 @@ import (
 	"github.com/gorilla/websocket"
 )
 
+// Structure du message échangé
 type Message struct {
 	Username string `json:"username"`
 	Content  string `json:"content"`
+	Type     string `json:"type"`
 }
+
+const (
+	MessageTypeNormal    = "normal"
+	MessageTypeJoin      = "join"
+	MessageTypeLeave     = "leave"
+)
+
 
 func main() {
 	interrupt := make(chan os.Signal, 1)
@@ -60,10 +69,12 @@ func main() {
 				log.Println("Erreur de désérialisation du message:", err)
 				return
 			}
-			if msg.Username != username {
-				fmt.Printf("%s: %s\n", msg.Username, msg.Content)
+			if msg.Type == MessageTypeJoin {
+				fmt.Printf("%s %s\n", msg.Username, msg.Content)
+			} else if msg.Type == MessageTypeLeave {
+				fmt.Printf("%s %s\n", msg.Username, msg.Content)
 			} else {
-				fmt.Printf("Vous: %s\n", msg.Content)
+				fmt.Printf("%s: %s\n", msg.Username, msg.Content)
 			}
 		}
 	}()

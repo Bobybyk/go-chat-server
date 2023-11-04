@@ -30,6 +30,14 @@ func HandleConnections(w http.ResponseWriter, r *http.Request) {
 
 	username := msg.Username
 
+	// Envoyer un message de notification "join" aux autres clients
+	notificationMsg := Message{
+		Username: username,
+		Content:  "s'est connecté.",
+		Type:     MessageTypeJoin,
+	}
+	broadcast <- notificationMsg
+
 	mutex.Lock()
 	clients[conn] = username
 	mutex.Unlock()
@@ -42,6 +50,15 @@ func HandleConnections(w http.ResponseWriter, r *http.Request) {
 			mutex.Lock()
 			delete(clients, conn)
 			mutex.Unlock()
+
+			// Envoyer un message de notification "leave" aux autres clients
+			notificationMsg := Message{
+				Username: username,
+				Content:  "s'est déconnecté.",
+				Type:     MessageTypeLeave,
+			}
+			broadcast <- notificationMsg
+
 			break
 		}
 

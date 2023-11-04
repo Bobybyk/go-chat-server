@@ -24,10 +24,17 @@ var mutex sync.Mutex
 // Structure du message échangé
 type Message struct {
 	Username string `json:"username"`
-	Content string `json:"content"`
+	Content  string `json:"content"`
+	Type     string `json:"type"`
 }
 
 type Client struct {
 	Conn      *websocket.Conn
 	Username  string
 }
+
+const (
+	MessageTypeNormal    = "normal"
+	MessageTypeJoin      = "join"
+	MessageTypeLeave     = "leave"
+)
