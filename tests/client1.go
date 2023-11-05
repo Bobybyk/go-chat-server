@@ -28,7 +28,7 @@ func main() {
 	interrupt := make(chan os.Signal, 1)
 	signal.Notify(interrupt, os.Interrupt)
 
-	serverURL := "ws://localhost:8084/ws" // Mettez l'URL de votre serveur ici
+	serverURL := "ws://localhost:8081/ws" // Mettez l'URL de votre serveur ici
 
 	c, _, err := websocket.DefaultDialer.Dial(serverURL, nil)
 	if err != nil {

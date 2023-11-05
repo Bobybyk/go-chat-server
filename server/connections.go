@@ -28,7 +28,10 @@ func HandleConnections(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+
 	username := msg.Username
+
+	fmt.Printf("%s s'est connecté.\n", username)
 
 	// Envoyer un message de notification "join" aux autres clients
 	notificationMsg := Message{
