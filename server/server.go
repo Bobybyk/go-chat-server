@@ -1,6 +1,7 @@
 package server
 
 import (
+	"fmt"
 	"time"
 	"sync"
 	"net/http"
@@ -40,3 +41,17 @@ const (
 	MessageTypeJoin      = "join"
 	MessageTypeLeave     = "leave"
 )
+
+func sendChatHistory(conn *websocket.Conn) {
+    // Envoyer l'historique des messages au client récemment connecté
+    mutex.Lock()
+    for _, message := range chatHistory {
+        err := conn.WriteJSON(message)
+        if err != nil {
+            fmt.Printf("Error writing message: %v", err)
+        }
+    }
+    mutex.Unlock()
+}
+
+var chatHistory []Message // pour stocker l'historique des messages
