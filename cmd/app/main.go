@@ -40,7 +40,8 @@ func main() {
 
     // Gestionnaire CORS utilisé comme gestionnaire racine
     http.Handle("/", corsHandler)
-
+    go server.HandleMessages()
+    
     // Démarrage du serveur sur le port 8080
     fmt.Println("Serveur WebSocket démarré sur le port :8080")
     err := http.ListenAndServe(":8080", nil)

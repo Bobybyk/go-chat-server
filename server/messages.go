@@ -2,6 +2,7 @@ package server
 
 import (
 	"log"
+	"fmt"
 )
 
 /**
@@ -19,6 +20,7 @@ func HandleMessages() {
 				if err != nil {
 					log.Printf("Error writing message: %v", err)
 				}
+				fmt.Printf("Message envoyé à %s: %s\n", username, msg.Content)
 			}
 		}
 		mutex.Unlock()

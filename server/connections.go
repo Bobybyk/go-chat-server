@@ -28,18 +28,19 @@ func HandleConnections(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-
 	username := msg.Username
 
 	fmt.Printf("%s s'est connecté.\n", username)
 
 	// Envoyer un message de notification "join" aux autres clients
-	notificationMsg := Message{
-		Username: username,
-		Content:  "s'est connecté.",
-		Type:     MessageTypeJoin,
-	}
-	broadcast <- notificationMsg
+
+		notificationMsg := Message{
+			Username: username,
+			Content:  "s'est connecté.",
+			Type:     MessageTypeJoin,
+		}
+		broadcast <- notificationMsg
+
 
 	mutex.Lock()
 	clients[conn] = username
@@ -53,7 +54,7 @@ func HandleConnections(w http.ResponseWriter, r *http.Request) {
 			mutex.Lock()
 			delete(clients, conn)
 			mutex.Unlock()
-
+	
 			// Envoyer un message de notification "leave" aux autres clients
 			notificationMsg := Message{
 				Username: username,
@@ -61,12 +62,13 @@ func HandleConnections(w http.ResponseWriter, r *http.Request) {
 				Type:     MessageTypeLeave,
 			}
 			broadcast <- notificationMsg
-
+	
 			break
 		}
-
-		fmt.Printf("connections.go - %s: %s\n", msg.Username, msg.Content)
-
-		broadcast <- msg
+	
+		if msg.Type == MessageTypeNormal {
+			fmt.Printf("connections.go [normal] - %s: %s\n", msg.Username, msg.Content)
+			broadcast <- msg // Diffusez le message 
+		}
 	}
 }
