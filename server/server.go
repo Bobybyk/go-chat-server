@@ -1,6 +1,7 @@
 package server
 
 import (
+	"time"
 	"sync"
 	"net/http"
 	"github.com/gorilla/websocket"
@@ -26,6 +27,7 @@ type Message struct {
 	Username string `json:"username"`
 	Content  string `json:"content"`
 	Type     string `json:"type"`
+	Timestamp time.Time `json:"timestamp"`
 }
 
 type Client struct {

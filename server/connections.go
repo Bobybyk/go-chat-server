@@ -1,6 +1,7 @@
 package server
 
 import (
+	"time"
 	"fmt"
 	"log"
 	"net/http"
@@ -34,12 +35,28 @@ func HandleConnections(w http.ResponseWriter, r *http.Request) {
 
 	// Envoyer un message de notification "join" aux autres clients
 
-		notificationMsg := Message{
+	notificationMsg := Message{
+		Username: username,
+		Content:  "s'est connecté.",
+		Type:     MessageTypeJoin,
+	}
+	broadcast <- notificationMsg
+
+	// Envoie au nouveau client la liste des clients connectés
+	mutex.Lock()
+	for _, username := range clients {
+		msg := Message{
 			Username: username,
-			Content:  "s'est connecté.",
+			Content:  "",
 			Type:     MessageTypeJoin,
+			Timestamp: time.Now(),
 		}
-		broadcast <- notificationMsg
+		err := conn.WriteJSON(msg)
+		if err != nil {
+			log.Printf("Error writing message: %v", err)
+		}
+	}
+	mutex.Unlock()
 
 
 	mutex.Lock()
@@ -60,11 +77,13 @@ func HandleConnections(w http.ResponseWriter, r *http.Request) {
 				Username: username,
 				Content:  "s'est déconnecté.",
 				Type:     MessageTypeLeave,
+				Timestamp: time.Now(),
 			}
 			broadcast <- notificationMsg
 	
 			break
 		}
+		msg.Timestamp = time.Now()
 	
 		if msg.Type == MessageTypeNormal {
 			fmt.Printf("connections.go [normal] - %s: %s\n", msg.Username, msg.Content)

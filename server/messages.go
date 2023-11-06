@@ -15,7 +15,7 @@ func HandleMessages() {
 		mutex.Lock()
 		for client, username := range clients {
 			// Exclure le client actuel de la diffusion
-			if client != nil && username != msg.Username {
+			if client != nil {
 				err := client.WriteJSON(msg)
 				if err != nil {
 					log.Printf("Error writing message: %v", err)
