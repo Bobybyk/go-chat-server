@@ -2,9 +2,13 @@ package server
 
 import (
 	"fmt"
+	// Importation du gestionnaire de temps
 	"time"
+	// Importation mutex
 	"sync"
+	// Importation du gestionnaire de route
 	"net/http"
+	// Importation du gestionnaire websocket
 	"github.com/gorilla/websocket"
 )
 
@@ -31,19 +35,21 @@ type Message struct {
 	Timestamp time.Time `json:"timestamp"`
 }
 
+// Structure d'un client
 type Client struct {
 	Conn      *websocket.Conn
 	Username  string
 }
 
+// types de messages
 const (
 	MessageTypeNormal    = "normal"
 	MessageTypeJoin      = "join"
 	MessageTypeLeave     = "leave"
 )
 
+// Envoie tous les messages de l'historique à la connexion
 func sendChatHistory(conn *websocket.Conn) {
-    // Envoyer l'historique des messages au client récemment connecté
     mutex.Lock()
     for _, message := range chatHistory {
         err := conn.WriteJSON(message)
@@ -54,4 +60,5 @@ func sendChatHistory(conn *websocket.Conn) {
     mutex.Unlock()
 }
 
-var chatHistory []Message // pour stocker l'historique des messages
+// contient les messages déjà reçus
+var chatHistory []Message

@@ -8,34 +8,35 @@ import (
 )
 
 /**
- * Met à jour la carte des clients, 
- * lit les messages JSON des clients et les transmet à la goroutine de diffusion,
- * et gère les erreurs de connexion
+ * Gestionnaire de connexion WebSocket
  */
-// Fonction pour gérer la connexion d'un client
 func HandleConnections(w http.ResponseWriter, r *http.Request) {
+
+    // Mise à niveau de la demande HTTP en une connexion WebSocket
     conn, err := upgrader.Upgrade(w, r, nil)
     if err != nil {
         log.Fatal(err)
         return
     }
+    // Fermeture de la connexion lorsque la fonction retourne
     defer conn.Close()
 
+    // Enregistrement du nouveau client dans la carte
     var msg Message
 
-    // Attendez un message d'inscription du client
+    // Attente d'un message d'inscription du client
     err = conn.ReadJSON(&msg)
     if err != nil {
         log.Printf("Error reading registration message: %v", err)
         return
     }
 
+    // Enregistrement du nouveau client dans la carte
     username := msg.Username
 
     fmt.Printf("%s s'est connecté.\n", username)
 
-    // Envoyer un message de notification "join" aux autres clients
-
+    // Envoie d'un message de notification "join" aux autres clients
     notificationMsg := Message{
         Username: username,
         Content:  "s'est connecté.",
@@ -59,23 +60,28 @@ func HandleConnections(w http.ResponseWriter, r *http.Request) {
     }
     mutex.Unlock()
 
-    // Envoyer l'historique des messages au nouveau client
+    // Envoie de l'historique des messages au nouveau client
     sendChatHistory(conn)
 
     mutex.Lock()
     clients[conn] = username
     mutex.Unlock()
 
+    // Boucle infinie pour lire les messages du client
     for {
+
         var msg Message
+
         err := conn.ReadJSON(&msg)
+
         if err != nil {
             log.Printf("Error reading message: %v", err)
+
             mutex.Lock()
             delete(clients, conn)
             mutex.Unlock()
 
-            // Envoyer un message de notification "leave" aux autres clients
+            // Envoie d'un message de notification "leave" aux autres clients
             notificationMsg := Message{
                 Username: username,
                 Content:  "s'est déconnecté.",
@@ -86,16 +92,23 @@ func HandleConnections(w http.ResponseWriter, r *http.Request) {
 
             break
         }
+
+        // Ajout d'un horodatage au message reçu
         msg.Timestamp = time.Now()
 
+        // Diffusion du message à tous les clients
         if msg.Type == MessageTypeNormal {
             fmt.Printf("connections.go [normal] - %s: %s\n", msg.Username, msg.Content)
-            broadcast <- msg // Diffusez le message
+            broadcast <- msg // Diffuser le message
+            // Enregistrement du message dans l'historique
             saveToChatHistory(msg)
         }
     }
 }
 
+/**
+ * Ajout du message en paramètre à l'historique des messages
+ */
 func saveToChatHistory(msg Message) {
     mutex.Lock()
     chatHistory = append(chatHistory, msg)
