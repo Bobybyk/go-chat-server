@@ -1,6 +1,6 @@
 module github.com/Bobybyk/go-chat-server
 
-go 1.21.2
+go 1.19
 
 require (
 	github.com/felixge/httpsnoop v1.0.4 // indirect
